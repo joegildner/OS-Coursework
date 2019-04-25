@@ -15,17 +15,35 @@ header System
   -- is to explicitly disable interrupts before making a series of printing
   -- calls and then restore the interrupt status after printing is complete.
   functions
-    external GetCh () returns char
     external print (s: ptr to array of char)
     external printInt (i: int)
     external printHex (i: int)           -- prints, e.g., 0x0012ABCD
     external printChar (c: char)         -- prints non-printables as, e.g., \x05
     external printBool (b: bool)         -- prints "TRUE" or "FALSE"
-    external printDouble (d: double)
-    nl ()                                -- Short for printChar ('\n')
+
+
+  -- Misc. useful stuff.
+  type String = ptr to array of char
+  functions
+    MemoryEqual (s1, s2: ptr to char, len: int) returns bool
+    StrEqual (s1, s2: String) returns bool
+    StrCopy (s1, s2: String)               -- Copy s2 into s1; move min(s1,s2) chars
+    StrCmp (s1, s2: String) returns int    -- return -1 if <, 0 if =, +1 if >
+    Min (i, j: int) returns int
+    Max (i, j: int) returns int
+    printIntVar (s: String, i: int)        -- prints "s = " int \n
+    printHexVar (s: String, i: int)        -- prints "s = " 0x00000000 \n
+    printBoolVar (s: String, b: bool)      -- prints "s = " bool \n
+    printCharVar (s: String, c: char)      -- prints "s = " ch \n
+    printPtr (s: String, p: ptr to void)   -- prints "s = " 0x00000000 \n
+    nl ()                                  -- Short for printChar ('\n')
+
 
   -- The following routines are implemented in assembly in the Runtime.s file.
   functions
+    external Cleari ()                -- Execute "cleari" instruction and return
+    external Seti ()                  -- Execute "seti" instruction and return
+    external Wait ()                  -- Execute "wait" instruction and return
     external RuntimeExit ()           -- Terminate all execution and do not return
     external getCatchStack () returns int  -- Actually returns ptr to a CATCH_RECORD
     external MemoryZero (p: ptr to void, byteCount: int)  -- Set block of mem to zeros
@@ -33,9 +51,10 @@ header System
                          srcPtr: ptr to void,   -- to another memory area.  Need not
                          byteCount: int)        -- be aligned, but must not overlap!
 
+
   -- The following functions are part of the KPL language support.
   functions
-    KPLMemoryInitialize ()
+    KPLSystemInitialize ()
     KPLMemoryAlloc (byteCount: int) returns ptr to char
     KPLMemoryFree (p: ptr to char)
     KPLUncaughtThrow (errorID: ptr to char, line: int, rPtr: int)
@@ -44,9 +63,9 @@ header System
   errors
     UncaughtThrowError (errorID: ptr to char, line: int, routineDescPtr: int)
 
-  --
-  -- The class "Object" is the root of the superclass/subclass tree.
-  --
+
+  -- The class "Object" is the root of the superclass/subclass tree.  It has no
+  -- fields and no methods.
   class Object
   endClass
 

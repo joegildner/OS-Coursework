@@ -1,0 +1,132 @@
+Script started on 2019-05-03 18:55:16-0700
+]0;jgildner@Big-Chungus: ~/Code/csci447/csci447_s19/homework2[01;32mjgildner@Big-Chungus[00m:[01;34m~/Code/csci447/csci447_s19/homework2[00m$ make
+make: Nothing to be done for 'all'.
+]0;jgildner@Big-Chungus: ~/Code/csci447/csci447_s19/homework2[01;32mjgildner@Big-Chungus[00m:[01;34m~/Code/csci447/csci447_s19/homework2[00m$ blitz -g os
+Beginning execution...
+====================  KPL PROGRAM STARTING  ====================
+Example Thread-based Programs...
+Initializing Thread Scheduler...
+Plato
+    Sartre
+        Kant
+            Nietzsche
+                Aristotle
+.   .   .   .   .   
+    .   .   .   .   
+E   .   .   .   .   
+.   .   .   .   .   
+    .   .   .   .   
+        .   .   .   
+            .   .   
+                .   
+                    
+E                   
+E       E           
+.       E           
+.       .           
+.       .       E   
+        .       E   
+    E   .       E   
+    E           E   
+    E           .   
+    E       E   .   
+    .       E   .   
+    .       .   .   
+    .       .       
+E   .       .       
+E           .       
+E       E   .       
+E       E           
+.       E           
+.       E       E   
+.       .       E   
+        .       E   
+        .       .   
+    E   .       .   
+    E   .   E   .   
+    E       E   .   
+    E       E       
+    E       .       
+    .       .       
+    .   E   .       
+E   .   E   .       
+E   .   E           
+E   .   .           
+E       .           
+.       .           
+.       .       E   
+.               E   
+                E   
+    E           E   
+    E           .   
+    E       E   .   
+    E       E       
+    .       E       
+    .       .       
+E   .       .       
+E   .   E   .       
+E       E   .       
+E       E           
+E       .           
+.       .           
+.   E   .           
+.   E   .       E   
+.   E           E   
+.   .           E   
+    .           E   
+    .           .   
+    .       E   .   
+            E   .   
+            E       
+E           E       
+E           .       
+E       E   .       
+.       E   .       
+.       E           
+.       E       E   
+.       .       E   
+        .       E   
+    E   .       E   
+    E   .       .   
+    E           .   
+    E       E   .   
+    .       E   .   
+E   .       E   .   
+E   .       E       
+E   .       .       
+E           .       
+.           .       
+.           .   E   
+.       E   .   E   
+.       E       E   
+.       E       .   
+.       .       .   
+.       .   E   .   
+.   E   .   E   .   
+.   E   .   E       
+.   E       E       
+.   E       .       
+.   .       .       
+.   .   E   .       
+.   .   E   .   E   
+.   .   E       E   
+.   .   .       E   
+.       .       E   
+.       .       .   
+.       .   E   .   
+.   E   .   E   .   
+.   E   .   .   .   
+.   .   .   .   .   
+
+*****  A 'wait' instruction was executed and no more interrupts are scheduled... halting emulation!  *****
+
+Done!  The next instruction to execute will be:
+000EC8: 09000000       ret     
+Number of Disk Reads    = 0
+Number of Disk Writes   = 0
+Instructions Executed   = 451916
+Time Spent Sleeping     = 0
+    Total Elapsed Time  = 451916
+]0;jgildner@Big-Chungus: ~/Code/csci447/csci447_s19/homework2[01;32mjgildner@Big-Chungus[00m:[01;34m~/Code/csci447/csci447_s19/homework2[00m$ exit
+
+Script done on 2019-05-03 18:56:31-0700

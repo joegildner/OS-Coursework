@@ -1,0 +1,7 @@
+*
+!*.k
+!*.s
+!*.h
+!DISK
+!*.txt
+!.gitignore

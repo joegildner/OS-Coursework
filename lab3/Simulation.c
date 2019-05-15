@@ -26,8 +26,20 @@ void Simulate(int quantumA, int quantumB, int quantumC, int preEmp) {
 
 }
 
-int main() {
+int main(int argc, char* argv[]) {
   // Run simulation
-  Simulate(15, 20, 30, 0);
+
+  if(argc != 6){
+    printf("Wrong number of command line arguments");
+    return 0;
+  }
+
+  int qA = atoi(argv[2]);
+  int qB = atoi(argv[3]);
+  int qC = atoi(argv[4]);
+  int preEmp = atoi(argv[5]);
+
+
+  Simulate(qA, qB, qC, preEmp);
 
 }

@@ -13,8 +13,8 @@ DEPEND = $(DERIV)
 
 all: Simulation
 
-Simulation: $(DEPEND)
-	$(CC) -o Simulation $(CFLAGS) $(DERIV)
+Simulation: $(DEPEND) Simulation.h
+	$(CC) -o Simulation $(CFLAGS) $(DERIV) Simulation.h
 
 clean:
 	rm -f $(DERIV) Simulation

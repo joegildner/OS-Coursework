@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "Simulation.h"
+
 /* If there are custom classes/source files that you write, with
    custom functions, and you want those functions available for use in
    THIS .c file, then include the header file for the custom .c

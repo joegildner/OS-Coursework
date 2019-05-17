@@ -9,6 +9,8 @@
 
 #include "Simulation.h"
 
+#define LINELEN 256
+
 /* If there are custom classes/source files that you write, with
    custom functions, and you want those functions available for use in
    THIS .c file, then include the header file for the custom .c
@@ -17,6 +19,20 @@
    #include "SomeFile.h"
 
  */
+
+struct process_st{
+  int pid;
+  p_inst inst;
+};
+
+struct inst_st{
+  int id;
+  int time;
+  p_inst next_inst;
+};
+
+p_process* processes;
+
 
 void Simulate(int quantumA, int quantumB, int quantumC, int preEmp) {
   // A function whose input is the quanta for queues A, B, and C, as
@@ -36,6 +52,9 @@ int main(int argc, char* argv[]) {
     return 0;
   }
 
+  build_processes(argv[1]);
+
+
   int qA = atoi(argv[2]);
   int qB = atoi(argv[3]);
   int qC = atoi(argv[4]);
@@ -43,5 +62,19 @@ int main(int argc, char* argv[]) {
 
 
   Simulate(qA, qB, qC, preEmp);
+
+}
+
+void build_processes(char* filename){
+
+  FILE* infile = fopen(filename, "r");
+
+  char input_line[LINELEN];
+
+  while(fgets(input_line, LINELEN*sizeof(char), infile ) != NULL){
+    fputs(input_line, stdout);
+  }
+
+
 
 }

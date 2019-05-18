@@ -15,6 +15,7 @@ typedef inst *p_inst;
 
 
 void build_processes(char* filename);
-
+p_process new_process(char* idstr);
+void get_pinfo(char* idstr,int* pid, int* priority);
 
 #endif

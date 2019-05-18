@@ -22,6 +22,7 @@
 
 struct process_st{
   int pid;
+  int priority;
   p_inst inst;
 };
 
@@ -72,9 +73,30 @@ void build_processes(char* filename){
   char input_line[LINELEN];
 
   while(fgets(input_line, LINELEN*sizeof(char), infile ) != NULL){
-    fputs(input_line, stdout);
+    
+    if(input_line[0] == 'P'){
+      new_process(input_line);
+    }
+
   }
 
 
 
 }
+
+p_process new_process(char* idstr){
+  int pid;
+  int priority;
+
+  get_pinfo(idstr, &pid, &priority);
+  
+  p_process newp = malloc(sizeof(process));
+
+  return newp;
+
+}
+
+void get_pinfo(char* idstr, int* pid, int* priority){
+
+}
+

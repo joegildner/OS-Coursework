@@ -6,8 +6,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #include "Simulation.h"
+#include "multiqueue.h"
 
 #define LINELEN 256
 
@@ -20,33 +22,21 @@
 
  */
 
-struct process_st{
-  int pid;
-  int priority;
-  int arrival;
-  p_inst inst;
-};
-
-struct inst_st{
-  int type;
-  int time;
-  p_inst next_inst;
-};
-
 p_process* processes;
 int process_count;
 
 void Simulate(int quantumA, int quantumB, int quantumC, int preEmp) {
   // A function whose input is the quanta for queues A, B, and C, as
   // well as whether pre-emption is enabled.
+
+  p_cpu thecpu = newcpu();
+  p_multiqueue mqueue = new_multiqueue(quantumA, quantumB, quantumC, preEmp);
+
   for(int i=0; i<process_count; i++){
-    printf("P%d, Prio:%d, A:%d\n", processes[i]->pid, processes[i]->priority,processes[i]->arrival);
-    p_inst curr_inst = processes[i]->inst;
-    while(curr_inst != NULL){
-      printf("INST: %d, TIME: %d\n", curr_inst->type, curr_inst->time);
-      curr_inst=curr_inst->next_inst;
-    }
+    add_process(processes[i], mqueue, thecpu);
   }
+
+  print_multiqueue(mqueue);
 
 }
 
@@ -68,6 +58,15 @@ int main(int argc, char* argv[]) {
 
   Simulate(qA, qB, qC, preEmp);
 
+}
+
+p_cpu newcpu(){
+  p_cpu new_cpu = malloc(sizeof(cpu));
+  new_cpu->decoded = 0;
+  new_cpu->time_left=0;
+  new_cpu->proc = NULL;
+
+  return new_cpu;
 }
 
 void build_processes(char* filename){
@@ -119,6 +118,8 @@ p_process new_process(char* idstr){
   p_process newp = malloc(sizeof(process));
   newp->pid = pid;
   newp->priority = priority;
+  newp->promote = 0;
+  newp->demote =0;
   newp->inst = NULL;
 
   return newp;
@@ -199,3 +200,8 @@ void add_instruction(p_inst* instruction, int type, int time){
   (*instruction)->next_inst = NULL;
 }
 
+void print_cpu(p_cpu thecpu){
+  if(thecpu->proc != NULL){
+    printf("CPU: P%d (#%d), %ds", thecpu->proc->pid, thecpu->proc->priority, thecpu->time_left);
+  }
+}

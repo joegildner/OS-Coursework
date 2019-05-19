@@ -19,3 +19,9 @@ io:5
 exe:23
 exe:4
 terminate
+P47668:6
+arrival_t:43
+io:5
+exe:23
+exe:4
+terminate

@@ -25,19 +25,96 @@
 p_process* processes;
 int process_count;
 
+void cpu_tick(p_multiqueue mqueue, p_cpu thecpu, p_process* io_pool, int*);
+void io_tick(p_multiqueue mqueue, p_cpu thecpu, p_process* io_pool);
+void print_iopool(p_process* io_pool);
+
 void Simulate(int quantumA, int quantumB, int quantumC, int preEmp) {
   // A function whose input is the quanta for queues A, B, and C, as
   // well as whether pre-emption is enabled.
 
+  int running_count = process_count;
+  p_process io_pool[process_count];
+  for(int i=0; i<process_count; i++){
+    io_pool[i] = NULL;
+  }
+
   p_cpu thecpu = newcpu();
   p_multiqueue mqueue = new_multiqueue(quantumA, quantumB, quantumC, preEmp);
 
-  for(int i=0; i<process_count; i++){
-    add_process(processes[i], mqueue, thecpu);
+  int tick = 0;
+  while(running_count>0){
+
+    for(int i=0; i<process_count; i++){
+      if(processes[i]->arrival == tick)
+        add_process(processes[i], mqueue, thecpu);
+    }
+
+    io_tick(mqueue, thecpu, io_pool);
+    cpu_tick(mqueue, thecpu, io_pool, &running_count);
+
+    printf("t=%d\n",tick);
+    print_cpu(thecpu);
+    print_multiqueue(mqueue);
+    print_iopool(io_pool);
+    printf("------------------------------------------------------------\n");
+
+    tick++;
+  }
+}
+
+void cpu_tick(p_multiqueue mqueue, p_cpu thecpu, p_process* io_pool, int* running_count){
+  if(thecpu->time_left == 0){
+
+    if(thecpu->proc != NULL){
+      if(thecpu->proc->promote < 3) thecpu->proc->demote++;
+      add_process(thecpu->proc, mqueue, thecpu);
+      thecpu->proc = NULL;
+    }
   }
 
-  print_multiqueue(mqueue);
+  if(thecpu->proc == NULL){
+    next_process(mqueue, thecpu);
+  }
 
+  if(thecpu->proc != NULL){
+    if(!thecpu->decoded){
+      thecpu->time_left--;
+      thecpu->decoded = 1;
+
+      if(thecpu->proc->inst->type == PROC_IO){
+        if(thecpu->proc->demote < 3) thecpu->proc->promote++;
+        add_io(thecpu->proc, io_pool);
+        thecpu->proc = NULL;
+      }else
+      if(thecpu->proc->inst->type == PROC_TERM){
+        thecpu->proc = NULL;
+        (*running_count)--;
+      }
+
+    }else{
+      thecpu->time_left--;
+      if(--thecpu->proc->inst->time == 0){
+        thecpu->proc->inst = thecpu->proc->inst->next_inst;
+        thecpu->decoded = 0;
+      }
+    }
+  }
+}
+
+void io_tick(p_multiqueue mqueue, p_cpu thecpu, p_process* io_pool){
+  for(int i=0; i<process_count; i++){
+    if(io_pool[i]!=NULL){
+      io_pool[i]->inst->time--;
+
+      if(io_pool[i]->inst->time < 0){
+        io_pool[i]->inst = io_pool[i]->inst->next_inst;
+        add_process(io_pool[i], mqueue, thecpu);
+        io_pool[i] = NULL;
+      }
+    }
+
+  }
 }
 
 int main(int argc, char* argv[]) {
@@ -200,8 +277,29 @@ void add_instruction(p_inst* instruction, int type, int time){
   (*instruction)->next_inst = NULL;
 }
 
+void add_io(p_process p, p_process* io_pool) {
+  for(int i=0; i<process_count; i++){
+    if(io_pool[i] == NULL){
+      io_pool[i] = p;
+      break;
+    }
+  }
+}
+
 void print_cpu(p_cpu thecpu){
   if(thecpu->proc != NULL){
-    printf("CPU: P%d (#%d), %ds", thecpu->proc->pid, thecpu->proc->priority, thecpu->time_left);
+    printf("CPU: P%d (#%d), %ds\n", thecpu->proc->pid, thecpu->proc->priority, thecpu->time_left);
+    printf("\tExecution type: %d, %ds\n", thecpu->proc->inst->type, thecpu->proc->inst->time);
+  }else{
+    printf("CPU: (empty), %ds\n",thecpu->time_left);
   }
+}
+
+void print_iopool(p_process* io_pool){
+  printf("IO: ");
+  for(int i=0; i<process_count; i++){
+    if(io_pool[i] != NULL)
+      printf("P%d (#%d) %ds, ", io_pool[i]->pid, io_pool[i]->priority, io_pool[i]->inst->time);
+  }
+  printf("\n");
 }

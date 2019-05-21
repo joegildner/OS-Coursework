@@ -58,19 +58,17 @@ void next_process(p_multiqueue mqueue, p_cpu thecpu){
 		thecpu->time_left = mqueue->queue_c->quantum;
 		thecpu->proc = mqueue->queue_c->head->proc;
 		mqueue->queue_c->head = mqueue->queue_c->head->next;
-	}else{
-		thecpu->time_left = -1;
 	}
 }
 
 void add_process(p_process process, p_multiqueue mqueue, p_cpu thecpu){
-	if(process->promote == 3){
+	if(process->promote >= 3){
 		queue_process(process, mqueue->queue_a, 0);
 	}else
-	if(process->demote ==3){
+	if(process->demote >= 3){
 		queue_process(process, mqueue->queue_c,0);
 	}else{
-		if(thecpu->proc != NULL && process->priority > thecpu->proc->priority){
+		if(thecpu->proc != NULL && process->priority > thecpu->proc->priority && mqueue->preempt){
 			p_process kicked = thecpu->proc;
 			thecpu->proc = process;
 			thecpu->decoded = 0;

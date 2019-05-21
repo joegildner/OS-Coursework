@@ -48,5 +48,6 @@ int get_val(char* line);
 void add_instruction(p_inst*, int type, int time);
 p_cpu newcpu();
 void print_cpu(p_cpu thecpu);
+void add_io(p_process p, p_process* io_pool);
 
 #endif

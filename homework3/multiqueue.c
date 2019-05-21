@@ -1,3 +1,7 @@
+// Joe Gildner
+// CSCI 447, HW3
+// 05/20/2019
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -5,6 +9,7 @@
 #include "Simulation.h"
 #include "multiqueue.h"
 
+//Structure with variables to represent the multi-level process queue
 struct multiqueue_st{
 	int preempt;
 	p_queue queue_a;
@@ -12,16 +17,22 @@ struct multiqueue_st{
 	p_queue queue_c;
 };
 
+//Structure with variables to represent a single queue
 struct queue_st{
 	int quantum;
 	p_node head;
 };
 
+//Structure with variables to represent the linked list of processes in a queue.
 struct node_st{
 	p_process proc;
 	p_node next;
 };
 
+/* new_multiqueue
+ * creates a new multi-level queue data structure which contains three queues with
+ * three unique quanta. Also specifies whether this multiqueue preempts. 
+ */
 p_multiqueue new_multiqueue(int qA, int qB, int qC, int preempt){
 	p_multiqueue newmq = malloc(sizeof(multiqueue));
 	newmq->preempt = preempt;
@@ -32,6 +43,9 @@ p_multiqueue new_multiqueue(int qA, int qB, int qC, int preempt){
 	return newmq;
 }
 
+/* new_queue
+ * creates a single queue with the specified quantum
+ */
 p_queue new_queue(int quantum){
 	p_queue newq = malloc(sizeof(queue));
 	newq->quantum = quantum;
@@ -40,6 +54,10 @@ p_queue new_queue(int quantum){
 	return newq;
 }
 
+/* next_process
+ * Loads a process into the cpu from the multilevel queue
+ * choosing the highest priority queue first, A to B to C
+ */
 void next_process(p_multiqueue mqueue, p_cpu thecpu){
 	if(mqueue->queue_a->head != NULL){
 		thecpu->decoded = 0;
@@ -61,6 +79,10 @@ void next_process(p_multiqueue mqueue, p_cpu thecpu){
 	}
 }
 
+/* add_process
+ * queues a process in the multilevel queue. If the process has been promoted it
+ * goes to Queue A, if demoted it goes to Queue C. Else, it goes to Queue B and is sorted by priority.
+ */
 void add_process(p_process process, p_multiqueue mqueue, p_cpu thecpu){
 	if(process->promote >= 3){
 		queue_process(process, mqueue->queue_a, 0);
@@ -78,6 +100,10 @@ void add_process(p_process process, p_multiqueue mqueue, p_cpu thecpu){
 	}
 }
 
+/* queue_process
+ * queues a process in the specified queue. If priority is specified, then
+ * inserts the process into the correct position based on its priority level
+ */
 void queue_process(p_process process, p_queue queue, int priority){
 	p_node *curr_node = &(queue->head);
 	p_node new_node = malloc(sizeof(node));
@@ -102,6 +128,29 @@ void queue_process(p_process process, p_queue queue, int priority){
 		*curr_node = new_node;
 	}
 }
+
+/* multiqueue_tick
+ * Executes a queue tick for each queue in the multiqueue
+ */
+void multiqueue_tick(p_multiqueue mqueue){
+	queue_tick(mqueue->queue_a);
+	queue_tick(mqueue->queue_b);
+	queue_tick(mqueue->queue_c);
+}
+
+/* queue_tick
+ * Increases the waiting time by one for each process in the queue.
+ */
+void queue_tick(p_queue queue){
+	p_node curr_node = queue->head;
+
+	while(curr_node != NULL){
+		curr_node->proc->wait++;
+		curr_node = curr_node->next;
+	}
+}
+
+//-------------- print methods for debugging  ------------
 
 void print_multiqueue(p_multiqueue mqueue){
 	printf("A: ");

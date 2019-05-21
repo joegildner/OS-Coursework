@@ -1,8 +1,6 @@
-/*
- *  File: Simulation.c ... a skeleton file
- *  Author: Filip Jagodzinski <filip.jagodzinski@wwu.edu>
- *  Last update : 08 February 2018
- */
+// Joe Gildner
+// CSCI 447, HW3
+// 05/20/2019
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,22 +11,42 @@
 
 #define LINELEN 256
 
-/* If there are custom classes/source files that you write, with
-   custom functions, and you want those functions available for use in
-   THIS .c file, then include the header file for the custom .c
-   file(s) you've written, using the #include directive. For example:
-
-   #include "SomeFile.h"
-
- */
-
 p_process* processes;
-int process_count;
+p_process* completions;
+int process_count;  
 
-void cpu_tick(p_multiqueue mqueue, p_cpu thecpu, p_process* io_pool, int*);
+// Prototypes which require all other headers to have already been defined for use
+void cpu_tick(p_multiqueue mqueue, p_cpu thecpu, p_process* io_pool, int, int*);
 void io_tick(p_multiqueue mqueue, p_cpu thecpu, p_process* io_pool);
 void print_iopool(p_process* io_pool);
+void print_tick(p_multiqueue mqueue, p_cpu thecpu, p_process* io_pool, int tick);
+void print_results(int, int quantumA, int quantumB, int quantumC, int preEmp);
 
+int main(int argc, char* argv[]) {
+  // Run simulation
+
+  if(argc != 6){
+    printf("Wrong number of command line arguments");
+    return 0;
+  }
+
+  count_processes(argv[1]);
+  build_processes(argv[1]);
+
+  int qA = atoi(argv[2]);
+  int qB = atoi(argv[3]);
+  int qC = atoi(argv[4]);
+  int preEmp = atoi(argv[5]);
+
+  Simulate(qA, qB, qC, preEmp);
+
+}
+
+/* Simulate
+ * Simulates a scheduling algorithm in an Operating system, with specified
+ * time values for each queue and an option to preempt the current executing
+ * process based on priority.
+ */
 void Simulate(int quantumA, int quantumB, int quantumC, int preEmp) {
   // A function whose input is the quanta for queues A, B, and C, as
   // well as whether pre-emption is enabled.
@@ -51,19 +69,22 @@ void Simulate(int quantumA, int quantumB, int quantumC, int preEmp) {
     }
 
     io_tick(mqueue, thecpu, io_pool);
-    cpu_tick(mqueue, thecpu, io_pool, &running_count);
+    cpu_tick(mqueue, thecpu, io_pool, tick, &running_count);
+    multiqueue_tick(mqueue);
 
-    printf("t=%d\n",tick);
-    print_cpu(thecpu);
-    print_multiqueue(mqueue);
-    print_iopool(io_pool);
-    printf("------------------------------------------------------------\n");
+    //print_tick(mqueue, thecpu, io_pool, tick);
 
     tick++;
   }
+
+  print_results(tick, quantumA, quantumB, quantumC, preEmp);
 }
 
-void cpu_tick(p_multiqueue mqueue, p_cpu thecpu, p_process* io_pool, int* running_count){
+/* cpu_tick
+ * simulates a tick of the CPU, and decides what to do with the processes
+ * in the queue as well as the process in the CPU
+ */
+void cpu_tick(p_multiqueue mqueue, p_cpu thecpu, p_process* io_pool, int tick, int* running_count){
   if(thecpu->time_left == 0){
 
     if(thecpu->proc != NULL){
@@ -88,6 +109,8 @@ void cpu_tick(p_multiqueue mqueue, p_cpu thecpu, p_process* io_pool, int* runnin
         thecpu->proc = NULL;
       }else
       if(thecpu->proc->inst->type == PROC_TERM){
+        completions[process_count-*running_count] = thecpu->proc;
+        thecpu->proc->complete = tick-thecpu->proc->arrival;
         thecpu->proc = NULL;
         (*running_count)--;
       }
@@ -102,6 +125,11 @@ void cpu_tick(p_multiqueue mqueue, p_cpu thecpu, p_process* io_pool, int* runnin
   }
 }
 
+
+/* io_tick
+ * operates a single io tick for all of the processes currently in the io queue, decrementing
+ * their remaining io times and then adding them back into the queue when complete
+ */
 void io_tick(p_multiqueue mqueue, p_cpu thecpu, p_process* io_pool){
   for(int i=0; i<process_count; i++){
     if(io_pool[i]!=NULL){
@@ -117,26 +145,11 @@ void io_tick(p_multiqueue mqueue, p_cpu thecpu, p_process* io_pool){
   }
 }
 
-int main(int argc, char* argv[]) {
-  // Run simulation
 
-  if(argc != 6){
-    printf("Wrong number of command line arguments");
-    return 0;
-  }
-
-  count_processes(argv[1]);
-  build_processes(argv[1]);
-
-  int qA = atoi(argv[2]);
-  int qB = atoi(argv[3]);
-  int qC = atoi(argv[4]);
-  int preEmp = atoi(argv[5]);
-
-  Simulate(qA, qB, qC, preEmp);
-
-}
-
+/* newcpu
+ * creates a data structure realization of the cpu for this simulated operating
+ * system.
+ */
 p_cpu newcpu(){
   p_cpu new_cpu = malloc(sizeof(cpu));
   new_cpu->decoded = 0;
@@ -146,6 +159,10 @@ p_cpu newcpu(){
   return new_cpu;
 }
 
+
+/* build_processes 
+ * builds all the process structures from the specifified formatted file
+ */
 void build_processes(char* filename){
 
   FILE* infile = fopen(filename, "r");
@@ -170,15 +187,18 @@ void build_processes(char* filename){
       }
       else
       if(input_line[0] == 'e'){
+        curr_proc->icount++;
         add_instruction(curr_inst, PROC_EXE, get_val(input_line));
         curr_inst = &((*curr_inst)->next_inst);
       }else
       if(input_line[0] == 'i'){
+        curr_proc->icount++;
         add_instruction(curr_inst, PROC_IO, get_val(input_line));
         curr_inst = &((*curr_inst)->next_inst);
       }
       else
       if(input_line[0] == 't'){
+        curr_proc->icount++;
         add_instruction(curr_inst, PROC_TERM, get_val(input_line));
         curr_inst = &((*curr_inst)->next_inst);
       }
@@ -186,6 +206,20 @@ void build_processes(char* filename){
   }
 }
 
+/* add_instruction
+ * adds a new instruction to the linked list of instructions
+ * pointed to by instruction
+ */
+void add_instruction(p_inst* instruction, int type, int time){
+  (*instruction)= malloc(sizeof(inst));
+  (*instruction)->type = type;
+  (*instruction)->time = time;
+  (*instruction)->next_inst = NULL;
+}
+
+/* new_process
+ * creates a new process 
+ */
 p_process new_process(char* idstr){
   int pid;
   int priority;
@@ -197,12 +231,18 @@ p_process new_process(char* idstr){
   newp->priority = priority;
   newp->promote = 0;
   newp->demote =0;
+  newp->wait = 0;
+  newp->complete = 0;
+  newp->icount = 0;
   newp->inst = NULL;
 
   return newp;
 
 }
 
+/*  
+ *
+ */
 void get_pinfo(char* idstr, int* pid, int* priority){
   char pidstr[16];
   char prioritystr[16];
@@ -234,6 +274,10 @@ void get_pinfo(char* idstr, int* pid, int* priority){
 
 }
 
+
+/*  
+ *
+ */
 void count_processes(char* filename){
 
   FILE* infile = fopen(filename, "r");
@@ -248,8 +292,13 @@ void count_processes(char* filename){
 
   process_count = p_count;
   processes = malloc(p_count * sizeof *processes);
+  completions = malloc(p_count * sizeof *processes);
 }
 
+
+/* 
+ *
+ */
 int get_val(char* line){
   
   int i=0;
@@ -270,13 +319,10 @@ int get_val(char* line){
 
 }
 
-void add_instruction(p_inst* instruction, int type, int time){
-  (*instruction)= malloc(sizeof(inst));
-  (*instruction)->type = type;
-  (*instruction)->time = time;
-  (*instruction)->next_inst = NULL;
-}
 
+/* add_io
+ * adds the process p to the io_pool when executing an io instruction
+ */
 void add_io(p_process p, p_process* io_pool) {
   for(int i=0; i<process_count; i++){
     if(io_pool[i] == NULL){
@@ -286,6 +332,9 @@ void add_io(p_process p, p_process* io_pool) {
   }
 }
 
+
+
+// -------------------- print methods, mainly for debugging ---------------- //
 void print_cpu(p_cpu thecpu){
   if(thecpu->proc != NULL){
     printf("CPU: P%d (#%d), %ds\n", thecpu->proc->pid, thecpu->proc->priority, thecpu->time_left);
@@ -302,4 +351,53 @@ void print_iopool(p_process* io_pool){
       printf("P%d (#%d) %ds, ", io_pool[i]->pid, io_pool[i]->priority, io_pool[i]->inst->time);
   }
   printf("\n");
+}
+
+void print_tick(p_multiqueue mqueue, p_cpu thecpu, p_process* io_pool, int tick){
+    printf("t=%d\n",tick);
+    print_cpu(thecpu);
+    print_multiqueue(mqueue);
+    print_iopool(io_pool);
+    printf("------------------------------------------------------------\n");
+}
+
+
+/* print_results
+ * Calculates and prints the desired analysis statistics for the simulation run.
+ */
+void print_results(int tick, int quantumA, int quantumB, int quantumC, int preEmp){
+  int inst_count = 0;
+  int ready_tot = 0;
+  int through_tot = 0;
+  int ready_max = 0;
+  int ready_min = INT_MAX;
+
+  for(int i=0; i<process_count; i++){
+    p_process p = processes[i];
+    inst_count += p->icount;
+    ready_tot += p->wait;
+    through_tot += p->complete;
+    if(ready_max < p->wait) ready_max = p->wait;
+    if(ready_min > p->wait) ready_min = p->wait;
+  }
+
+  double ready_avg = (double)ready_tot/(double)process_count;
+  double throughput = (double)process_count/(double)through_tot;
+
+  printf("Results (QA: %d, QB: %d, QC: %d, pre-emption: %d)\n", quantumA,  quantumB, quantumC, preEmp);
+
+  printf("Start/end time: %d, %d\n", 0, tick);
+  printf("Processes Completed: %d\n", process_count);
+  printf("Instructions Completed: %d\n", inst_count);
+  printf("Throughput: %.3f processes/unit time\n", throughput);
+  printf("Ready time average: %.2f\n", ready_avg);
+  printf("Ready time maximum: %d\n", ready_max);
+  printf("Ready time minimum: %d\n", ready_min);
+
+
+  printf("Completion Order: ");
+  for(int i=0; i<process_count; i++){
+    printf("P%d, ", completions[i]->pid);
+  }
+  printf("\n\n");
 }

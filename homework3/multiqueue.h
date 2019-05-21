@@ -1,3 +1,7 @@
+// Joe Gildner
+// CSCI 447, HW3
+// 05/20/2019
+
 #ifndef MQUEUE
 #define MQUEUE
  
@@ -20,5 +24,8 @@ void next_process(p_multiqueue mqueue, p_cpu thecpu);
 void queue_process(p_process process, p_queue queue, int priority);
 void print_multiqueue(p_multiqueue mqueue);
 void print_queue(p_queue queue);
+
+void multiqueue_tick(p_multiqueue mqueue);
+void queue_tick(p_queue queue);
 
 #endif

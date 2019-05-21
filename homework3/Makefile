@@ -5,17 +5,16 @@ CC=gcc
 
 CFLAGS = -g -Wall
 
-FILES = Simulation.c Simulation.h
+FILES = Simulation.c multiqueue.c
 
-DERIV = ${FILES:.c=.o}
+HEADER = ${FILES:.c=.h}
 
-DEPEND = $(DERIV)
+DEPEND = $(FILES) $(HEADER)
 
 all: Simulation
 
-Simulation: $(DEPEND) Simulation.h
-	$(CC) -o Simulation $(CFLAGS) $(DERIV)
+Simulation: $(DEPEND) $(HEADER)
+	$(CC) -o Simulation $(CFLAGS) $(FILES) $(HEADER)
 
 clean:
-	rm -f $(DERIV) Simulation
-
+	rm -f Simulation

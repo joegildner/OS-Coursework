@@ -104,8 +104,13 @@ void Terminate(int pid) {
 	Remove(pid);
 }
 
-int main() {
+int main(int argc, char* argv[]) {
 	int i;
+
+	if(argc < 2) {
+		printf("%s\n", "Wrong number of command line arguments");
+		exit(1);
+	}
 	// initialize the process hash table
 	for (i = 0; i < TABLESIZE; i++) table[i] = NULL;
 

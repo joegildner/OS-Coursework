@@ -15,13 +15,15 @@
 #define PAGESIZE	4096		// system page size
 
 // data structure for process hash table entries
-typedef struct procstruct {
+typedef struct table_struct {
   int pid;
   int page;
   struct procstruct* next;
-} proc;
+  bool dirty;
+  bool ref;
+} ptable;
 
-proc* table[TABLESIZE];		// process hash table
+ptable* pagetable[TABLESIZE];		// process hash table
 int procCount = 0;		// number of processes
 int pageCount = 0;
 
@@ -46,8 +48,7 @@ int find(int pid, int page) {
     if (procCount >= MAXPROC)
       return 0;		// too many processes
     else {				// add new process
-      node = (proc*) malloc(sizeof(proc));
-      node->pid = pid;
+      node = (proc*) malloc(sizeof(proc));j
       node->page = page;
       node->next = NULL;
       procCount++;
@@ -85,6 +86,7 @@ void Remove(int pid) {
 
 // called in response to a memory access attempt by process pid to memory address
 int Access(int pid, int address, int write) {
+
   if (find(pid, address/PAGESIZE)) {
     printf("pid %d wants %s access to address %d on page %d. Page count is %d\n", 
 	   pid, (write) ? "write" : "read", address, address/PAGESIZE, pageCount);

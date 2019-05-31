@@ -1,0 +1,125 @@
+Joe Gildner
+CPU Scheduling analysis
+
+To start with a point of reference, we begin with a neutral configuration of 10 burst units for each queue and no premption. This gives us the following results:
+
+Results (QA: 10, QB: 10, QC: 10, pre-emption: 0)
+Start/end time: 0, 612
+Processes Completed: 7
+Instructions Completed: 42
+Throughput: 0.002 processes/unit time
+Ready time average: 326.29
+Ready time maximum: 391
+Ready time minimum: 166
+Completion Order: P47663, P43, P1001, P334, P1002, P3954, P2
+
+Next let's see how it looks if we give each process virtually unlimited time in the cpu to complete, say 500 burst units:
+
+Results (QA: 500, QB: 500, QC: 500, pre-emption: 0)
+Start/end time: 0, 540
+Processes Completed: 7
+Instructions Completed: 42
+Throughput: 0.003 processes/unit time
+Ready time average: 220.00
+Ready time maximum: 420
+Ready time minimum: 49
+Completion Order: P43, P47663, P2, P1001, P334, P3954, P1002, 
+
+While this is actually an improvement, it is not necessarily ideal. Let's look for a middle ground then start changing the different queue quantum values.
+
+Results (QA: 100, QB: 100, QC: 100, pre-emption: 0)
+Start/end time: 0, 542
+Processes Completed: 7
+Instructions Completed: 42
+Throughput: 0.003 processes/unit time
+Ready time average: 221.14
+Ready time maximum: 422
+Ready time minimum: 49
+Completion Order: P43, P47663, P2, P1001, P334, P3954, P1002, 
+
+Basically the same result
+
+Results (QA: 30, QB: 30, QC: 30, pre-emption: 0)
+Start/end time: 0, 566
+Processes Completed: 7
+Instructions Completed: 42
+Throughput: 0.003 processes/unit time
+Ready time average: 250.71
+Ready time maximum: 356
+Ready time minimum: 118
+Completion Order: P43, P47663, P1001, P334, P1002, P2, P3954, 
+
+Now let's see what happens when we make queue c the longest queue:
+
+Results (QA: 10, QB: 20, QC: 30, pre-emption: 0)
+Start/end time: 0, 573
+Processes Completed: 7
+Instructions Completed: 42
+Throughput: 0.003 processes/unit time
+Ready time average: 246.71
+Ready time maximum: 360
+Ready time minimum: 89
+Completion Order: P43, P47663, P1001, P334, P1002, P2, P3954, 
+
+Minor improvement, but not better than giving everyone longer.
+
+Results (QA: 30, QB: 20, QC: 10, pre-emption: 0)
+Start/end time: 0, 595
+Processes Completed: 7
+Instructions Completed: 42
+Throughput: 0.003 processes/unit time
+Ready time average: 239.29
+Ready time maximum: 376
+Ready time minimum: 89
+Completion Order: P43, P47663, P1001, P334, P1002, P3954, P2, 
+
+Still not in that ideal spot, let's try increasing the Queue B time since most processes come out of Queue B
+
+Results (QA: 40, QB: 40, QC: 10, pre-emption: 0)
+Start/end time: 0, 547
+Processes Completed: 7
+Instructions Completed: 42
+Throughput: 0.003 processes/unit time
+Ready time average: 222.00
+Ready time maximum: 426
+Ready time minimum: 20
+Completion Order: P43, P2, P47663, P1001, P334, P3954, P1002, 
+
+Looking better, and with more realistic burst times than the 100 units per queue case. Let's play with the values of queue A and queue C
+
+Results (QA: 60, QB: 40, QC: 10, pre-emption: 0)
+Start/end time: 0, 547
+Processes Completed: 7
+Instructions Completed: 42
+Throughput: 0.003 processes/unit time
+Ready time average: 222.00
+Ready time maximum: 426
+Ready time minimum: 20
+Completion Order: P43, P2, P47663, P1001, P334, P3954, P1002
+
+No difference here. For one last test, let's decrease both QA and QB to see the difference.
+
+Results (QA: 30, QB: 20, QC: 15, pre-emption: 0)
+Start/end time: 0, 589
+Processes Completed: 7
+Instructions Completed: 42
+Throughput: 0.003 processes/unit time
+Ready time average: 243.00
+Ready time maximum: 373
+Ready time minimum: 89
+Completion Order: P43, P47663, P1001, P334, P1002, P3954, P2, 
+
+and to see the difference with preemption:
+
+Results (QA: 30, QB: 20, QC: 15, pre-emption: 1)
+Start/end time: 0, 595
+Processes Completed: 7
+Instructions Completed: 42
+Throughput: 0.003 processes/unit time
+Ready time average: 240.29
+Ready time maximum: 378
+Ready time minimum: 57
+Completion Order: P43, P47663, P1001, P334, P1002, P3954, P2, 
+
+It appears that for general processes, the main driving factor for efficiency is having enough time that context switching does not significantly increase the running time of the process. In this case that meant Queue B was around the 20 range. To further increase throughput, having the Queue A value be larger and the Queue C value smaller also helped. 
+

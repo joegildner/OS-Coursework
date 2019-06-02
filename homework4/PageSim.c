@@ -27,19 +27,24 @@ enum{
   METHOD_RAND,
 };
 
-// data structure for process hash table entries
+
+ptable* pagetable[TABLESIZE];   // page table
+int procs[MAXPROC];             // current process table
+int procCount = 0;              // currenty process count
+
+int lastReplace;                //index in pagetable of last replacement 
+int method;                     //replacement strategy, per the enum above
+
+int writeBackFaults = 0;        //running total of write-back faults
+int readFaults = 0;             //running total of read faults
+int pageAttempts = 0;           //total paging attempts
 
 
-ptable* pagetable[TABLESIZE];   // process hash table
-int procs[MAXPROC];
-int procCount = 0;    // number of processes
-int lastReplace;
-int method;
-
-int writeBackFaults = 0;
-int readFaults = 0;
-int pageAttempts = 0;
-
+/* main entry point
+ * the main function deciphers which page replacement method is being used from the
+ * input arguments and assigns it to the method variable. The simulation is then
+ * run, after which this method tallies up the statistics of the run.
+ */
 int main(int argc, char* argv[]) {
   srand(time(0)); 
 
@@ -127,6 +132,10 @@ int Access(int pid, int address, int write) {
   return retval;
 }
 
+/* available
+ * First check in the Access sequence, if the page requested is already in the page table
+ * then no faults occur but reference values are adjusted.
+ */
 bool available(int pid, int page, int write){
   bool success = false;
   for(int i=0; i<TABLESIZE; i++){
@@ -143,6 +152,10 @@ bool available(int pid, int page, int write){
   return success;
 }
 
+/* replaceEmpty
+ * Second check in the Access sequence, if there is an empty slot in the page table, fill
+ * that slot with the requested page.
+ */
 bool replaceEmpty(int pid, int page, int write){
   bool success = false;
   for(int i=0; i<TABLESIZE; i++){
@@ -160,6 +173,10 @@ bool replaceEmpty(int pid, int page, int write){
 
 }
 
+/* replaceLRU
+ * Third check in the Access sequence, if method is LRU. Replace the page which was used least
+ * recently checking the reference and dirty bits to make an informed decision
+ */
 void replaceLRU(int pid, int page, int write){
   bool found = false;
 
@@ -236,6 +253,10 @@ void replaceLRU(int pid, int page, int write){
 
 }
 
+/* replaceLFU
+ * Third check in the Access sequence, if LFU is the specified method. replace the 
+ * least used page in the table as tallied so far by the program.
+ */
 void replaceLFU(int pid, int page, int write){
   int minRef = INT_MAX;
   int minRefIndex =-1;
@@ -264,9 +285,12 @@ void replaceLFU(int pid, int page, int write){
 
   pagetable[minRefIndex] = newTableEntry(pid, page, write);
   lastReplace = minRefIndex;
-
 }
 
+/* replaceRand
+ * Third check in the Access sequence, if Random is the specified replacement method.
+ * randomly choose an index in the pagetable and replace that page with the request.
+ */
 void replaceRand(int pid, int page, int write){
   int choice = (rand() % (TABLESIZE));
   ptable* evicted = pagetable[choice];
@@ -288,7 +312,10 @@ void replaceRand(int pid, int page, int write){
   
 }
 
-// called when process terminates
+/* Terminate
+ * Called when a process Terminates, that process is removed from the process list
+ * and all of its pages in the pagetable are removed.
+ */
 void Terminate(int pid) {
 
   for(int i=0; i<MAXPROC; i++){
@@ -313,6 +340,11 @@ void Terminate(int pid) {
   
 }
 
+
+/* newTableEntry
+ * creates a new ptable "object" which contains the information about
+ * the page for the page table
+ */
 ptable* newTableEntry(int pid, int page, int write){
   ptable* newEntry = malloc(sizeof(ptable));
 
@@ -330,6 +362,9 @@ ptable* newTableEntry(int pid, int page, int write){
   return newEntry;
 }
 
+/* validProcess
+ * Checks if the process with pid is already in the system
+ */
 bool validProcess(int pid){
   bool valid = false;
 
@@ -341,6 +376,9 @@ bool validProcess(int pid){
 
 }
 
+/* fillProcSlot
+ * puts the pid of the process into an open slot in the process array
+ */
 void fillProcSlot(int pid){
 
   for(int i=0; i<MAXPROC; i++){
@@ -355,6 +393,10 @@ void fillProcSlot(int pid){
 
 }
 
+/* halfReferences
+ * divides the reference count of all the processes in half when called
+ * for use in the LFU scheme.
+ */
 void halfReferences(){
   for(int i=0; i<TABLESIZE; i++){
     if(pagetable[i] != NULL){

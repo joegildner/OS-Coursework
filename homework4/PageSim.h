@@ -27,6 +27,7 @@ bool validProcess(int pid);
 bool available(int,int,int);
 bool replaceEmpty(int,int,int);
 void replaceLRU(int, int, int);
+void LRUOperation(int pid, int page, int write, int, int, bool*);
 void replaceLFU(int, int, int);
 void replaceRand(int, int, int);
 void fillProcSlot(int pid);

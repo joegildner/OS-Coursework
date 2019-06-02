@@ -70,8 +70,6 @@ int main(int argc, char* argv[]) {
 
   printf("MMU simulation with %s replacement strategy started\n", argv[1]);
   Simulate(TABLESIZE*1000);
-
-  printf("\n");
   printf("MMU simulation with %s replacement strategy finished\n", argv[1]);
 
   printf("\n");
@@ -245,7 +243,7 @@ void replaceLFU(int pid, int page, int write){
   for(int i=0; i<TABLESIZE; i++){
     ptable* p = pagetable[i];
 
-    if(p != NULL && p->ref < minRef){
+    if(p != NULL && p->ref <= minRef){
       minRef = p->ref;
       minRefIndex = i;
     }
@@ -264,7 +262,6 @@ void replaceLFU(int pid, int page, int write){
     readFaults++;
   }
 
-  printf("%d\n",minRef);
   pagetable[minRefIndex] = newTableEntry(pid, page, write);
   lastReplace = minRefIndex;
 

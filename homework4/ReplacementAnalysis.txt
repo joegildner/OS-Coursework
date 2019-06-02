@@ -1,0 +1,123 @@
+Joseph Gildner
+Replacement Analysis
+05/31/2019
+
+To get a frame of reference to start our analysis, we begin with random replacement strategy, where a frame is
+randomly discarded from main memory when an eviction needs to occur. This replacement method, run three times with
+2048000 page attempts (1000x the size of the pagetable), gives us the following results:
+
+MMU simulation with Random replacement strategy started
+MMU simulation with Random replacement strategy finished
+
+Total Page Attempts: 2048000
+Write Back Faults: 24040
+Read Faults: 101926
+Total Faults: 125966
+
+Fault Freq: 6.15%
+Write Back Fault Freq: 1.17%
+
+MMU simulation with Random replacement strategy started
+MMU simulation with Random replacement strategy finished
+
+Total Page Attempts: 2048000
+Write Back Faults: 23232
+Read Faults: 99601
+Total Faults: 122833
+
+Fault Freq: 6.00%
+Write Back Fault Freq: 1.13%
+
+MMU simulation with Random replacement strategy started
+MMU simulation with Random replacement strategy finished
+
+Total Page Attempts: 2048000
+Write Back Faults: 23629
+Read Faults: 101742
+Total Faults: 125371
+
+Fault Freq: 6.12%
+Write Back Fault Freq: 1.15%
+
+The total frequency of page faults sits around 6%, which is actually not terrible. But let's see if our "intelligent"
+replacement methods are any better.
+
+The next method to test is the Least Recently Used (LRU) replacement strategy, with enhanced second chance. this
+method run three times with the same conditions gives us the following results:
+
+MMU simulation with LRU replacement strategy started
+MMU simulation with LRU replacement strategy finished
+
+Total Page Attempts: 2048000
+Write Back Faults: 11001
+Read Faults: 152507
+Total Faults: 163508
+
+Fault Freq: 7.98%
+Write Back Fault Freq: 0.54%
+
+MMU simulation with LRU replacement strategy started
+MMU simulation with LRU replacement strategy finished
+
+Total Page Attempts: 2048000
+Write Back Faults: 10770
+Read Faults: 166277
+Total Faults: 177047
+
+Fault Freq: 8.64%
+Write Back Fault Freq: 0.53%
+
+MMU simulation with LRU replacement strategy started
+MMU simulation with LRU replacement strategy finished
+
+Total Page Attempts: 2048000
+Write Back Faults: 10643
+Read Faults: 157202
+Total Faults: 167845
+
+Fault Freq: 8.20%
+Write Back Fault Freq: 0.52%
+
+It's interesting to note that while the total fault frequency has increased, the number of write-back faults
+has decreased significantly. Since write-back faults are the most costly type of fault, this is actually a vast
+improvement over the random method.
+
+Next we see how the Least Frequently Used algorithm holds up:
+
+
+MMU simulation with LFU replacement strategy started
+MMU simulation with LFU replacement strategy finished
+
+Total Page Attempts: 2048000
+Write Back Faults: 35110
+Read Faults: 146733
+Total Faults: 181843
+
+Fault Freq: 8.88%
+Write Back Fault Freq: 1.71%
+
+
+MMU simulation with LFU replacement strategy started
+MMU simulation with LFU replacement strategy finished
+
+Total Page Attempts: 2048000
+Write Back Faults: 35099
+Read Faults: 145582
+Total Faults: 180681
+
+Fault Freq: 8.82%
+Write Back Fault Freq: 1.71%
+
+
+MMU simulation with LFU replacement strategy started
+MMU simulation with LFU replacement strategy finished
+
+Total Page Attempts: 2048000
+Write Back Faults: 36365
+Read Faults: 150951
+Total Faults: 187316
+
+Fault Freq: 9.15%
+Write Back Fault Freq: 1.78%
+
+Interestingly enough, this method has worse results than the random method. It seems that choosing the least frequently used frame is not a better indicator of it's future use than randomly evicting.

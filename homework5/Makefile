@@ -5,10 +5,8 @@ CC = javac
 
 FILES = DiskSim.java
 
-DERIV = ${FILES:.java=.class}
-
 all: $(FILES)
 	$(CC) $(FILES)
 
 clean:
-	rm -f $(DERIV)
+	rm -f *.class
